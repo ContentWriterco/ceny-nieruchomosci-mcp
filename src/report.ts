@@ -27,6 +27,10 @@ const pct = (sorted: number[], p: number) => {
 };
 const group = (n: number) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 const zl = (v: number) => (Number.isFinite(v) ? `${group(v)} zł` : "–");
+/** RCN zoning codes like "budownictwoMieszkanioweJednorodzinne" -> "budownictwo mieszkaniowe jednorodzinne" */
+export const zoningPl = (z: string) =>
+  ({ brakMPZPLubWZ: "brak MPZP i WZ", innyNiewymieniony: "przeznaczenie inne", rolnicze: "rolne", lesne: "leśne" })[z] ??
+  z.replace(/([a-ząćęłńóśźż])([A-ZĄĆĘŁŃÓŚŹŻ])/g, "$1 $2").toLowerCase();
 const k = (v: number) => (v >= 1e6 ? `${(v / 1e6).toFixed(2).replace(".", ",")} mln zł` : zl(Math.round(v / 1000) * 1000));
 
 export function filterTxs(txs: Tx[], q: Required<Pick<Query, "kind" | "months">> & Query, center: Place, radius: number, now = new Date()): (Tx & { ppm2: number; dist: number })[] {
@@ -140,7 +144,7 @@ export async function priceReport(q: Query): Promise<string> {
     if (ex.length) {
       lines.push("", "Ostatnie transakcje (bez adresów):");
       for (const r of ex) {
-        const det = kind === "flat" ? `${r.rooms ? `${r.rooms} pok., ` : ""}${r.floor !== undefined ? `piętro ${r.floor}, ` : ""}` : kind === "plot" && r.zoning ? `${r.zoning}, ` : "";
+        const det = kind === "flat" ? `${r.rooms ? `${r.rooms} pok., ` : ""}${r.floor !== undefined ? `piętro ${r.floor}, ` : ""}` : kind === "plot" && r.zoning ? `${zoningPl(r.zoning)}, ` : "";
         const size = kind === "house" ? `${r.area > 0 ? `${Math.round(r.area)} m² domu, ` : ""}${r.landArea ? `działka ${group(r.landArea)} m²` : ""}`.replace(/, $/, "") : `${Math.round(r.area)} m²`;
         lines.push(`- ${r.date.slice(0, 7)} · ${size || "–"} · ${det}${k(r.price)}${Number.isFinite(r.ppm2) ? ` · ${zl(r.ppm2)}/m²` : ""} · ${Math.round(r.dist)} m od punktu`);
       }

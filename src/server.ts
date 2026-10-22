@@ -3,6 +3,7 @@ import { z } from "zod";
 import { UserError, log } from "./config.js";
 import { priceReport } from "./report.js";
 import { geocode } from "./geocode.js";
+import { parcelReport } from "./parcel.js";
 import { VERSION } from "./version.js";
 import { usage, classify } from "./usage.js";
 
@@ -30,7 +31,9 @@ async function run(tool: string, fn: () => Promise<string>): Promise<Text> {
 
 export const INSTRUCTIONS = `Real transaction prices of Polish real estate from notarial deeds (Rejestr Cen Nieruchomości, GUGiK) – not asking prices.
 Use property_prices with an address ("Poznań, Garbary 10"), a street ("Kraków, Długa"), a town or "lat,lon". It returns the median price per m², the spread, price by number of rooms, a yearly trend and recent transactions (no addresses) within a radius.
-Explain to the user that these are deed prices from the official register (free-market sales, full ownership), that the newest months are incomplete because the register is filled with a delay, and that small samples (<10) are only indicative. Answer in the user's language.`;
+Explain to the user that these are deed prices from the official register (free-market sales, full ownership), that the newest months are incomplete because the register is filled with a delay, and that small samples (<10) are only indicative. Use parcel_report for one plot ("Bnin 100", a parcel id like 306401_1.0051.AR_14.39/6, an address or "lat,lon"): parcel id and area, land use class, local zoning plan (MPZP) with the zoning symbol when published, nearby utility networks (water, sewer, gas, power, heat, telecom), flood hazard, nature protection and plot prices around. If several parcels match, ask the user which one (or pass commune).
+Remind the user that the parcel report is a summary of public registers, not a legal zoning extract (wypis i wyrys) and not a design map.
+Answer in the user's language.`;
 
 const kind = z.enum(["flat", "house", "plot"]).optional().describe("flat = mieszkanie (default), house = dom, plot = działka niezabudowana");
 
@@ -76,6 +79,24 @@ export function createServer(): McpServer {
   );
 
   server.registerTool(
+    "parcel_report",
+    {
+      title: "Parcel check (Poland): zoning, utilities, flood, protection, prices",
+      description:
+        "Everything public about one land parcel (działka) in Poland: parcel id, area and land-use class from the land register (EGiB), local zoning plan (MPZP) and zoning symbol, " +
+        "utility networks on or near the plot (water, sewer, gas, power, heat, telecom – GESUT), flood hazard (ISOK maps), nature protection areas (GDOŚ) and plot prices nearby (RCN). " +
+        "query: parcel id \"302109_4.0001.100\", \"obręb number\" like \"Bnin 100\" or \"obręb Bnin działka 100 gmina Kórnik\", an address \"Kórnik, Poznańska 1\" (the parcel under the address point) or \"lat,lon\".",
+      inputSchema: {
+        query: z.string().describe("Parcel id, 'obręb number', address or 'lat,lon'"),
+        commune: z.string().optional().describe("Gmina / powiat name to pick the right parcel when 'obręb number' matches several"),
+        prices: z.boolean().optional().describe("Include plot prices nearby (default true)"),
+      },
+      annotations: ro,
+    },
+    async (a) => run("parcel_report", () => parcelReport({ query: a.query, commune: a.commune, prices: a.prices })),
+  );
+
+  server.registerTool(
     "find_address",
     {
       title: "Find an address (Poland)",
@@ -101,6 +122,7 @@ export function createServer(): McpServer {
         [
           "Rejestr Cen Nieruchomości (RCN) – Główny Urząd Geodezji i Kartografii, krajowa usługa WFS https://mapy.geoportal.gov.pl/wss/service/rcn (dane z powiatów; bezpłatne od 13.02.2026, art. 40 ustawy Prawo geodezyjne i kartograficzne).",
           "Adresy: GUGiK UUG (państwowy rejestr granic i adresów).",
+          "Działki (parcel_report): ULDK i Krajowa Integracja Ewidencji Gruntów, Krajowa Integracja Miejscowych Planów Zagospodarowania Przestrzennego, Krajowa Integracja Uzbrojenia Terenu (GESUT) – GUGiK; mapy zagrożenia powodziowego – PGW Wody Polskie (ISOK); formy ochrony przyrody – GDOŚ.",
           "Pomijamy dane identyfikujące (numery aktów, strony transakcji, numery lokali); usługa krajowa nie publikuje adresów lokali.",
           "Zasięg zależy od powiatów (większość publikuje; część z opóźnieniem lub niekompletnie). Najnowsze miesiące są zwykle niepełne.",
           `ceny-nieruchomosci-mcp ${VERSION} · https://github.com/ContentWriterco/ceny-nieruchomosci-mcp`,

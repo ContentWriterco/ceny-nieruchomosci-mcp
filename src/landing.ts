@@ -53,6 +53,7 @@ Agent: W promieniu 500 m w ostatnich 2 latach: mediana 13 900 zł/m², typowo 76
 <h2>Co potrafi</h2>
 <ul>
 <li><b>property_prices</b> – mieszkania, domy albo działki w promieniu od adresu: mediana ceny za m², rozrzut, ceny wg liczby pokoi, trend rok do roku i ostatnie transakcje (bez adresów).</li>
+<li><b>parcel_report</b> – prześwietlenie działki: plan miejscowy i przeznaczenie, uzbrojenie (woda, kanalizacja, gaz, prąd), zagrożenie powodziowe, Natura 2000 i ceny działek w okolicy.</li>
 <li><b>find_address</b> – sprawdzenie adresu w państwowym rejestrze adresów.</li>
 <li><b>data_sources</b> – źródła i zastrzeżenia.</li>
 </ul>

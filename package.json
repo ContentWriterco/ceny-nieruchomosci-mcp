@@ -1,7 +1,7 @@
 {
   "name": "ceny-nieruchomosci-mcp",
-  "version": "0.1.0",
-  "description": "MCP server with real transaction prices of Polish real estate (flats, houses, plots) from notarial deeds – Rejestr Cen Nieruchomości (GUGiK). Median price per m², trends, recent sales near any address. No API key.",
+  "version": "0.2.0",
+  "description": "MCP server for Polish real estate: real transaction prices from notarial deeds (Rejestr Cen Nieruchomości) and parcel checks – zoning plan (MPZP), utilities, flood risk, nature protection. No API key.",
   "type": "module",
   "bin": {
     "ceny-nieruchomosci-mcp": "dist/index.js"
@@ -18,7 +18,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && node -e \"try{require('fs').chmodSync('dist/index.js',0o755)}catch(e){}\"",
-    "test": "npm run build && node --test test/unit.test.mjs",
+    "test": "npm run build && node --test test/unit.test.mjs test/parcel.test.mjs",
     "prepublishOnly": "npm test",
     "prepare": "npm run build"
   },
@@ -35,7 +35,13 @@
     "gugik",
     "open-data",
     "claude",
-    "ai-agent"
+    "ai-agent",
+    "dzialka",
+    "mpzp",
+    "plan-miejscowy",
+    "uzbrojenie",
+    "parcel",
+    "zoning"
   ],
   "license": "MIT",
   "dependencies": {

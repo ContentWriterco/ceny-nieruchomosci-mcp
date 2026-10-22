@@ -1,11 +1,11 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.schema.json",
   "name": "io.github.ContentWriterco/ceny-nieruchomosci-mcp",
-  "description": "Real transaction prices of Polish flats, houses and plots from notarial deeds (RCN register)",
+  "description": "Polish real-estate deed prices and parcel checks: zoning plan, utilities, flood risk",
   "repository": { "url": "https://github.com/ContentWriterco/ceny-nieruchomosci-mcp", "source": "github" },
-  "version": "0.1.0",
+  "version": "0.2.0",
   "packages": [
-    { "registryType": "npm", "identifier": "ceny-nieruchomosci-mcp", "version": "0.1.0", "transport": { "type": "stdio" } }
+    { "registryType": "npm", "identifier": "ceny-nieruchomosci-mcp", "version": "0.2.0", "transport": { "type": "stdio" } }
   ],
   "remotes": [{ "type": "streamable-http", "url": "https://ceny.compabase.com/mcp" }]
 }

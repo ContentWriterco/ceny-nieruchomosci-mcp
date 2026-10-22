@@ -4,6 +4,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import { createServer } from "./server.js";
 import { priceReport } from "./report.js";
+import { parcelReport } from "./parcel.js";
 import { usage } from "./usage.js";
 import { landingHtml } from "./landing.js";
 import { UserError, log } from "./config.js";
@@ -15,6 +16,7 @@ Usage:
   ceny-nieruchomosci-mcp                 MCP server on stdio (Claude, Cursor, VS Code, ...)
   ceny-nieruchomosci-mcp --http [--port 3000] [--host 127.0.0.1]   Streamable HTTP at /mcp
   ceny-nieruchomosci-mcp prices "<place>" [--kind flat|house|plot] [--radius 500] [--months 24] [--rooms N]
+  ceny-nieruchomosci-mcp parcel "<parcel id | obręb nr | address | lat,lon>" [--commune Kórnik] [--no-prices]
 
 Environment:
   CENY_MAX_RADIUS_M    max search radius (default 1500)
@@ -34,7 +36,7 @@ function parseArgs(argv: string[]) {
     if (a.startsWith("--")) {
       const key = a.slice(2);
       const next = argv[i + 1];
-      if (next !== undefined && !next.startsWith("--") && !["http", "help", "version"].includes(key)) {
+      if (next !== undefined && !next.startsWith("--") && !["http", "help", "version", "no-prices"].includes(key)) {
         flags[key] = next;
         i++;
       } else flags[key] = true;
@@ -177,6 +179,11 @@ async function main() {
           rooms: opt("rooms") ? Number(opt("rooms")) : undefined,
         })) + "\n",
       );
+      return;
+    }
+    if (pos[0] === "parcel") {
+      if (!pos[1]) throw new UserError('usage: ceny-nieruchomosci-mcp parcel "<parcel id | obręb nr | address | lat,lon>"');
+      process.stdout.write((await parcelReport({ query: pos[1], commune: opt("commune"), prices: !flags["no-prices"] })) + "\n");
       return;
     }
     if (flags.http) {
