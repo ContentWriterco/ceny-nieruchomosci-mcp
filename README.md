@@ -12,13 +12,10 @@
   <img alt="Bez klucza API" src="https://img.shields.io/badge/klucz%20API-niepotrzebny-2ea44f">
 </p>
 
-```
-Ty:     Za ile sprzedawały się mieszkania koło ul. Garbary 10 w Poznaniu?
-Agent:  W promieniu 500 m w ostatnich 2 latach było 228 transakcji wolnorynkowych:
-        mediana 12 048 zł/m² (połowa między 10 115 a 14 782 zł/m²), typowo 444 tys. zł za 39 m².
-        1 pokój: 13 163 zł/m² · 2 pokoje: 13 069 zł/m² · 3 pokoje: 10 787 zł/m² · 4+: 9 629 zł/m².
-```
-<sub>Prawdziwy wynik z października 2026.</sub>
+<p align="center">
+  <img src="docs/demo-pl.svg" width="860" alt="Animacja: użytkownik pyta asystenta AI, za ile sprzedawały się mieszkania koło ul. Garbary 10 w Poznaniu; asystent korzysta z ceny-nieruchomosci-mcp i podaje medianę ceny za m², ceny wg liczby pokoi i wykres trendu 2021–2026">
+</p>
+<p align="center"><sub>Prawdziwa odpowiedź publicznego serwera (228 aktów notarialnych w promieniu 500 m, październik 2026).</sub></p>
 
 ## Podłącz w 30 sekund
 
@@ -66,5 +63,7 @@ Kod: MIT. Dane: Rejestr Cen Nieruchomości – Główny Urząd Geodezji i Kartog
 ---
 
 ## English
+
+<p align="center"><img src="docs/demo-en.svg" width="860" alt="Animation: a user asks an AI assistant what flats near Garbary 10 in Poznań sold for; the assistant uses ceny-nieruchomosci-mcp and answers with the median price per m², prices by number of rooms and a 2021–2026 trend chart"></p>
 
 **ceny-nieruchomosci-mcp** gives AI assistants **real transaction prices of Polish real estate** (flats, houses, building plots) from notarial deeds in the official Rejestr Cen Nieruchomości (GUGiK), not asking prices. `property_prices` returns the median price per m², interquartile range, breakdown by rooms, primary/secondary market, a yearly trend and recent sales within a radius of any Polish address, street, town or coordinates. Public endpoint: `https://ceny.compabase.com/mcp` (no key), or run locally with `npx -y ceny-nieruchomosci-mcp`.
