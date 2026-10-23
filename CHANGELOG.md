@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1 – 2026-10-23
+
+- Miejscowości o tej samej nazwie (np. cztery „Zakopane”): wybieramy miasto (gminę miejską / miasto w gminie miejsko-wiejskiej wg ULDK), a pozostałe pokazujemy ze współrzędnymi i podpowiedzią, jak wskazać inną.
+- Gdy dla samej nazwy miejscowości nic nie ma w domyślnym promieniu, promień zwiększa się raz do maksimum (1,5 km).
+
 ## 0.2.0 – 2026-10-22
 
 - Nowe narzędzie `parcel_report` – prześwietlenie działki: identyfikator i powierzchnia (ULDK, ewidencja gruntów), użytek i grupa rejestrowa, plan miejscowy z krajowej integracji MPZP (z symbolem przeznaczenia także z usług WMS planów gmin), uzbrojenie terenu z KIUT/GESUT (odległość sieci od granic działki), zagrożenie powodziowe (ISOK), formy ochrony przyrody (GDOŚ), ceny działek w okolicy.

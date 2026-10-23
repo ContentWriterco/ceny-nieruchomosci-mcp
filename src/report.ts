@@ -80,12 +80,18 @@ function summary(rows: { ppm2: number; price: number; area: number }[]) {
 export async function priceReport(q: Query): Promise<string> {
   const kind: Kind = q.kind ?? "flat";
   const months = Math.max(1, Math.min(120, q.months ?? 24));
-  const radius = Math.max(100, Math.min(config.maxRadius, q.radiusM ?? (kind === "flat" ? 500 : 1500)));
+  let radius = Math.max(100, Math.min(config.maxRadius, q.radiusM ?? (kind === "flat" ? 500 : 1500)));
   const places = await geocode(q.place);
   const center = places[0];
-  const txs = await fetchBox(kind, center.x - radius, center.y - radius, center.x + radius, center.y + radius);
+  let txs = await fetchBox(kind, center.x - radius, center.y - radius, center.x + radius, center.y + radius);
   const qq = { ...q, kind, months };
-  const rows = filterTxs(txs, qq, center, radius);
+  let rows = filterTxs(txs, qq, center, radius);
+  // a town is given as one point (often not where people live): widen the circle once when nothing is found
+  if (!rows.length && center.precision === "town" && q.radiusM === undefined && radius < config.maxRadius) {
+    radius = config.maxRadius;
+    txs = await fetchBox(kind, center.x - radius, center.y - radius, center.x + radius, center.y + radius);
+    rows = filterTxs(txs, qq, center, radius);
+  }
   const lines: string[] = [];
   const unit = kind === "plot" ? "m² działki" : "m² pow. użytkowej";
   lines.push(
@@ -93,7 +99,9 @@ export async function priceReport(q: Query): Promise<string> {
     `Okres: ostatnie ${months} mies.${q.rooms !== undefined ? ` · pokoje: ${q.rooms >= 5 ? "5+" : q.rooms}` : ""}${q.minArea || q.maxArea ? ` · powierzchnia ${q.minArea ?? 0}–${q.maxArea ?? "∞"} m²` : ""}${q.market && q.market !== "any" ? ` · rynek ${q.market === "primary" ? "pierwotny" : "wtórny"}` : ""}`,
     "",
   );
-  if (places.length > 1 && center.precision !== "point") lines.push(`(Inne dopasowania adresu: ${places.slice(1, 4).map((p) => p.label).join("; ")})`, "");
+  if (places.length > 1 && center.precision === "town")
+    lines.push(`(Jest więcej miejscowości o tej nazwie: ${places.slice(1, 5).map((p) => p.label).join("; ")} – jeśli chodzi o inną, podaj adres z ulicą albo „lat,lon”.)`, "");
+  else if (places.length > 1 && center.precision !== "point") lines.push(`(Inne dopasowania adresu: ${places.slice(1, 4).map((p) => p.label).join("; ")})`, "");
   if (!rows.length) {
     lines.push(
       `Brak transakcji spełniających kryteria (w promieniu jest ${txs.length} rekordów RCN dowolnego rodzaju i daty).`,

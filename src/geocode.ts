@@ -85,8 +85,34 @@ export async function geocode(input: string): Promise<Place[]> {
     if (r) out = Object.values(r).map((a) => fromXY(a.city ?? q, +a.x, +a.y, "town", a.teryt));
   }
   out = out.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y));
+  // several villages share a name ("Zakopane" exists 4 times): prefer the one that is a town (urban gmina part, TERYT type 1/4/8/9)
+  if (out.length > 1 && out.every((p) => p.precision === "town")) out = await rankTowns(out);
   if (!out.length) throw new UserError(`Could not find "${input}". Use an address like "Poznań, Garbary 10", a street "Kraków, Długa", a town, or "lat,lon".`);
   cache.set(key, out);
   if (cache.size > 5000) cache.delete(cache.keys().next().value!);
   return out;
+}
+
+/** Order same-name towns: urban localities (gmina type 1 miejska, 4 miasto w gminie miejsko-wiejskiej, 8/9 dzielnica) first. */
+async function rankTowns(places: Place[]): Promise<Place[]> {
+  const cand = places.slice(0, 8);
+  const types = await Promise.all(
+    cand.map(async (p) => {
+      const ac = new AbortController();
+      const t = setTimeout(() => ac.abort(), 8_000);
+      try {
+        const res = await fetch(`https://uldk.gugik.gov.pl/?request=GetCommuneByXY&xy=${p.x},${p.y},2180&result=teryt`, { signal: ac.signal, headers: { "user-agent": config.userAgent } });
+        const m = (await res.text()).match(/\d{6}_(\d)/);
+        return m ? +m[1] : 0;
+      } catch {
+        return 0;
+      } finally {
+        clearTimeout(t);
+      }
+    }),
+  );
+  const urban = (k: number) => [1, 4, 8, 9].includes(k);
+  const order = cand.map((p, i) => ({ p, i, u: urban(types[i]) })).sort((a, b) => Number(b.u) - Number(a.u) || a.i - b.i);
+  const ranked = [...order.map((o) => o.p), ...places.slice(8)];
+  return ranked.map((p, i) => (i === 0 ? p : { ...p, label: `${p.label} (${p.lat.toFixed(3)}, ${p.lon.toFixed(3)})` }));
 }
