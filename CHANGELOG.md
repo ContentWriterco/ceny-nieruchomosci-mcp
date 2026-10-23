@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2 – 2026-10-23
+
+- Same-name towns: the town whose commune carries its name (e.g. Piła in wielkopolskie, not one of 13 villages) is picked first.
+
 ## 0.2.1 – 2026-10-23
 
 - Miejscowości o tej samej nazwie (np. cztery „Zakopane”): wybieramy miasto (gminę miejską / miasto w gminie miejsko-wiejskiej wg ULDK), a pozostałe pokazujemy ze współrzędnymi i podpowiedzią, jak wskazać inną.

@@ -32,6 +32,12 @@ async function uug(params: Record<string, string>): Promise<Record<string, Recor
   }
 }
 
+/** many villages share a town's name ("Piła" x14): the one whose commune carries its name, then county-seat communes, first */
+function townsFirst(rs: Record<string, string>[]): Record<string, string>[] {
+  const score = (a: Record<string, string>) => (a.street ? 0 : (a.commune && a.city && a.commune === a.city ? 2 : 0) + (a.teryt?.endsWith("01") ? 1 : 0));
+  return rs.map((a, i) => ({ a, i, s: score(a) })).sort((x, y) => y.s - x.s || x.i - y.i).map(({ a }) => a);
+}
+
 function fromXY(label: string, x: number, y: number, precision: Place["precision"], teryt?: string): Place {
   const { lat, lon } = fromPuwg92(x, y);
   return { label, x, y, lat, lon, teryt, precision };
@@ -63,7 +69,7 @@ export async function geocode(input: string): Promise<Place[]> {
   for (const v of variants) {
     const r = await uug({ request: "GetAddress", address: v });
     if (r) {
-      out = Object.values(r).map((a) =>
+      out = townsFirst(Object.values(r)).map((a) =>
         fromXY(`${a.city}${a.street ? `, ${a.street}` : ""}${a.number ? ` ${a.number}` : ""}`, +a.x, +a.y, a.number ? "address" : a.street ? "street" : "town", a.teryt),
       );
       if (out.length) break;
@@ -74,7 +80,7 @@ export async function geocode(input: string): Promise<Place[]> {
     for (const v of variants) {
       const r = await uug({ request: "GetStreet", street: v });
       if (r) {
-        out = Object.values(r).map((a) => fromXY(`${a.city}, ${a.street}`, +a.x, +a.y, "street", a.teryt));
+        out = townsFirst(Object.values(r)).map((a) => fromXY(`${a.city}, ${a.street}`, +a.x, +a.y, "street", a.teryt));
         if (out.length) break;
       }
     }
@@ -82,7 +88,7 @@ export async function geocode(input: string): Promise<Place[]> {
   if (!out.length) {
     // town / village name
     const r = await uug({ request: "GetAddress", address: parts[0] ?? q });
-    if (r) out = Object.values(r).map((a) => fromXY(a.city ?? q, +a.x, +a.y, "town", a.teryt));
+    if (r) out = townsFirst(Object.values(r)).map((a) => fromXY(a.city ?? q, +a.x, +a.y, "town", a.teryt));
   }
   out = out.filter((p) => Number.isFinite(p.x) && Number.isFinite(p.y));
   // several villages share a name ("Zakopane" exists 4 times): prefer the one that is a town (urban gmina part, TERYT type 1/4/8/9)

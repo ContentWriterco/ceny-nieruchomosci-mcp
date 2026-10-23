@@ -1,6 +1,6 @@
 {
   "name": "ceny-nieruchomosci-mcp",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "MCP server for Polish real estate: real transaction prices from notarial deeds (Rejestr Cen Nieruchomości) and parcel checks – zoning plan (MPZP), utilities, flood risk, nature protection. No API key.",
   "type": "module",
   "bin": {

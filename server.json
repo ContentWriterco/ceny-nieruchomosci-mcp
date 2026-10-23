@@ -3,9 +3,9 @@
   "name": "io.github.ContentWriterco/ceny-nieruchomosci-mcp",
   "description": "Polish real-estate deed prices and parcel checks: zoning plan, utilities, flood risk",
   "repository": { "url": "https://github.com/ContentWriterco/ceny-nieruchomosci-mcp", "source": "github" },
-  "version": "0.2.1",
+  "version": "0.2.2",
   "packages": [
-    { "registryType": "npm", "identifier": "ceny-nieruchomosci-mcp", "version": "0.2.1", "transport": { "type": "stdio" } }
+    { "registryType": "npm", "identifier": "ceny-nieruchomosci-mcp", "version": "0.2.2", "transport": { "type": "stdio" } }
   ],
   "remotes": [{ "type": "streamable-http", "url": "https://ceny.compabase.com/mcp" }]
 }
